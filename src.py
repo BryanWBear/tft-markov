@@ -42,6 +42,9 @@ class ProbabilityCalculator:
     def is_valid_state(self, state) -> bool:
         return all(state_unit <= unit.num_wanted for state_unit, unit in zip(state, self.units))
 
+    def get_final_state(self) -> Tuple:
+        return tuple([unit.num_wanted for unit in self.units])
+
     def get_num_same_cost_units(self, row_tuple: Tuple, unit: Unit) -> int:
         same_cost = 0
         for unit_idx, num_have in enumerate(row_tuple):
@@ -85,11 +88,19 @@ class ProbabilityCalculator:
     def get_probs(self, num_shops: int):
         return np.linalg.matrix_power(self.prob_matrix, num_shops * 5)
 
+    def get_agg_probs(self, num_shops: int):
+        shop_matrix = np.linalg.matrix_power(self.prob_matrix, 5)
+        matrix_idx = self.states_to_idx_mapping[self.get_final_state()]
+        probs = []
+        for i in range(0, num_shops):
+            probs.append(shop_matrix[0][matrix_idx])
+            shop_matrix = shop_matrix @ shop_matrix
+        return probs
+
 
 if __name__ == '__main__':
     sample_input = [Unit(num_wanted=3, num_have=0, cost=3), Unit(num_wanted=2, num_have=0, cost=2)]
     p_calc = ProbabilityCalculator(sample_input, 6)
-    print(p_calc.get_probs(30))
 
 
     
